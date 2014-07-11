@@ -1,0 +1,15 @@
+#use "topfind"
+#camlp4o
+#require "hardcaml.syntax,mparser,deriving"
+
+#directory "_build"
+#load "_build/deriving_bits.cmo"
+#load "_build/asm.cmo"
+#load "_build/ttc.cmo"
+
+module B = HardCaml.Bits.Comb.IntbitsList
+module A = Asm.Make(B)
+
+open A.Instruction
+open A.Asm
+

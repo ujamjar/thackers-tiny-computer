@@ -1,0 +1,5 @@
+<*.ml{,i}>: syntax(camlp4o), package(hardcaml.syntax,deriving)
+<asm.ml{,i}>: package(mparser.re)
+<*.{byte,native}>: package(hardcaml,mparser.re,deriving)
+
+
