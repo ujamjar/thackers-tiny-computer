@@ -2,49 +2,66 @@ open HardCaml
 open Ttc
 module B = Bits.Comb.IntbitsList
 module A = Asm.Make(B)
+module S = Ttc.Make(B)
 
-open A.Instruction.Func
+let cycles = ref 0
+let gtkwave = ref false
+let program = ref ""
+let interp = ref false
+let verbose = ref false
 
-let program : A.Asm.program =
-  let open A.Asm in
+let () = Arg.parse 
   [
-    "start", [
-      const 0 10;
-      const 1 20;
-      const_label 3 "loop";
-      instr ~func:Add 2 0 1;
-      block [
-        instr ~func:Sub 3 2 1;
-        instr ~func:Xor 3 2 1;
-      ];
-    ];
-    "loop", [
-    ];
+    "-c", Arg.Set_int cycles, "number of machine cycles to run";
+    "-w", Arg.Set gtkwave, "launch gtkwave";
+    "-i", Arg.Set interp, "run interpreter instead of simulator";
+    "-v", Arg.Set verbose, "verbose";
   ]
-(*
-let testbench program = 
-  let () = Printf.printf "Thacker's Tiny 3 Computer Simulation\n" in
+  (fun s -> program := s)
+  "Thackers Tiny Computer Program Simulator"
 
-  let module Builder = Interface.Gen(B)(Ttc_i)(Ttc_o_debug) in
-  let module S = Cyclesim.Api in
-  let module Vcd = Vcd_ext.Make(B) in
+let rec read_lines f = 
+  match try Some (input_line f |> B.const) with _ -> None with
+  | None -> []
+  | Some(x) -> x :: read_lines f
 
-  let open Ttc_i in
-  let open Ttc_o_debug in
+let program = 
+  match !program with
+  | "" -> read_lines stdin |> Array.of_list
+  | x -> 
+      let f = open_in x in
+      let p = read_lines f in
+      let () = close_in f in
+      p |> Array.of_list
 
-  let circ,sim,i,o = Builder.make "ttc" ttc_debug in
-  let sim = Vcd.gtkwave ~args:"-S gwShowall.tcl" sim in
+let output x = 
+  Printf.printf "OUTPUT: 0x%.8lx\n%!" x
 
-  let cycle() = S.cycle sim; S.cycle_comb sim in
+let input _ _ = 
+  Printf.printf "INPUT: %!";
+  input_line stdin |> Int32.of_string
 
-  (* reset *)
-  S.reset sim;
-  i.clr := B.vdd;
-  cycle();
-  i.clr := B.gnd;
+let cpu = 
+  if !interp then 
+    A.Interpreter.make 
+      ~start_address:0
+      ~input:(Some input) ~output:(Some output)
+      ~im:(A.Asm.Assembled(program))
+      ~dm:[||]
+  else
+    S.sim
+      ~gtkwave:(!gtkwave)
+      ~input:(Some input) ~output:(Some output)
+      ~im:(A.Asm.Assembled(program))
+      ~dm:[||]
 
-  Printf.printf "press return to continue\n%!";
-  input_line stdin
+let () = 
+  for i=0 to !cycles - 1 do
+    if !verbose then begin
+      Printf.printf "PC: %i [%s]\n%!" cpu#pc 
+        (try A.Printer.string_of_instr program.(cpu#pc) with _ -> "-");
+    end;
+    cpu#step
+  done
 
-(*let _ = testbench ()*)
-*)
+

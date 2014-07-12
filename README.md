@@ -3,3 +3,8 @@
 An implementation of Thackers Tiny Computer 3 in HardCaml.
 
 Based on the work of Simon Moore and friends at Cambridge University.
+
+### TODO
+
+* fix input/output for simulator
+

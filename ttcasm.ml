@@ -7,9 +7,9 @@ let () =
   A.Parser.with_file Sys.argv.(1) (fun chan ->
     match A.Parser.parse_channel chan with
     | None -> eprintf "Failed to parse assembly.\n"
-    | Some(x) -> begin
-      eprintf "Parsed assembly.\n";
-      A.Printer.pretty print_string x
+    | Some(p) -> begin
+      let A.Asm.Assembled p = A.Asm.assemble p in
+      Array.iter (fun x -> Printf.printf "%s\n" (B.to_string x)) p
     end
   )
 

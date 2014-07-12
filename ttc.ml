@@ -318,7 +318,7 @@ module Make(B : Comb.S) = struct
       i.mem.d := im.(j);
       S.cycle sim;
     done;
-    i.mem.we := B.vdd;
+    i.mem.we := B.gnd;
 
     (* set up busses *)
     i.i.ast.Avalon_stream_i.valid_i := B.vdd;
