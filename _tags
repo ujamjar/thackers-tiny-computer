@@ -1,5 +1,7 @@
 <*.ml{,i}>: syntax(camlp4o), package(hardcaml.syntax,deriving)
 <asm.ml{,i}>: package(mparser.re)
+<ttcwebdemo.ml>: package(js_of_ocaml.syntax)
 <*.{byte,native}>: package(hardcaml,mparser.re,deriving)
+<ttcwebdemo.byte>: package(js_of_ocaml)
 
 
